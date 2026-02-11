@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Hub - YouTube Music Player</title>
+    <meta name="description" content="Stream music from YouTube with background play and lock screen controls">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Music Hub">
+    
+    <!-- Icons -->
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #FF0000;
+            --primary-dark: #CC0000;
+            --secondary-color: #282828;
+            --background-dark: #0F0F0F;
+            --background-medium: #1A1A1A;
+            --background-light: #242424;
+            --background-card: #2D2D2D;
+            --text-primary: #FFFFFF;
+            --text-secondary: #AAAAAA;
+            --text-disabled: #666666;
+            --accent-blue: #3EA6FF;
+            --accent-purple: #9146FF;
+            --accent-green: #2BA640;
+            --player-height: 80px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 20px;
+            --spacing-lg: 32px;
+            --spacing-xl: 48px;
+            --border-radius: 12px;
+            --border-radius-lg: 20px;
+            --transition-speed: 0.3s;
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --hover-shadow: 0 8px 32px rgba(255, 0, 0, 0.2);
+            --glow-shadow: 0 0 15px rgba(255, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 100%);
+        }
+
+        /* Install PWA Banner */
+        #install-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1001;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .install-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            flex: 1;
+        }
+
+        .install-icon {
+            font-size: 1.5rem;
+        }
+
+        .install-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .install-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .install-btn {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .dismiss-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background var(--transition-speed);
+        }
+
+        .dismiss-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header */
+        .header {
+            background: rgba(15, 15, 15, 0.95);
+            padding: var(--spacing-md) var(--spacing-lg);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 0;
+            transition: margin-top var(--transition-speed);
+        }
+
+        .header.with-banner {
+            margin-top: 60px;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            gap: var(--spacing-md);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            transition: transform var(--transition-speed);
+            text-decoration: none;
+        }
+
+        .logo:hover {
+            transform: scale(1.02);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .action-btn.active {
+            color: var(--primary-color);
+            background: rgba(255, 0, 0, 0.15);
+        }
+
+        .action-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Search Box - PERBAIKAN UTAMA */
+        .search-container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: var(--spacing-sm);
+            width: 100%;
+            background: var(--background-card);
+            padding: 8px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all var(--transition-speed);
+            overflow: hidden;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-shadow);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all var(--transition-speed);
+            min-width: 0;
+        }
+
+        .search-input:focus {
+            outline: none;
+        }
+
+        .search-button {
+            padding: 0 28px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--glow-shadow);
+            white-space: nowrap;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
+        }
+
+        /* Main Content */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+            padding-bottom: calc(var(--player-height) + var(--spacing-lg));
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-results-info {
+            margin-bottom: var(--spacing-lg);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            padding: 12px 18px;
+            background: var(--background-card);
+            border-radius: var(--border-radius);
+            display: inline-block;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+            flex: 1;
+        }
+
+        /* Initial State - Centered Content */
+        .initial-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: var(--spacing-lg);
+            flex: 1;
+        }
+
+        .initial-icon {
+            font-size: 5rem;
+            margin-bottom: var(--spacing-lg);
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            opacity: 0.8;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .initial-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .initial-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .video-card {
+            background: var(--background-card);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: all var(--transition-speed);
+            cursor: pointer;
+            position: relative;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .video-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--hover-shadow);
+            border-color: rgba(255, 0, 0, 0.2);
+        }
+
+        .video-card.playing {
+            border-color: var(--primary-color);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .video-thumbnail-container {
+            position: relative;
+            overflow: hidden;
+            height: 160px;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .video-card:hover .video-thumbnail {
+            transform: scale(1.08);
+        }
+
+        .video-thumbnail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.9) 100%);
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: var(--spacing-sm);
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+
+        .video-card:hover .video-thumbnail-overlay {
+            opacity: 1;
+        }
+
+        .play-button {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: all var(--transition-speed);
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+        }
+
+        .video-info {
+            padding: var(--spacing-md);
+        }
+
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .video-channel {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .video-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-disabled);
+            font-size: 0.85rem;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .video-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .video-action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Video Player */
+        .video-player-container {
+            background: rgba(15, 15, 15, 0.95);
+            height: var(--player-height);
+            padding: 0 var(--spacing-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .video-player-container.active {
+            transform: translateY(0);
+        }
+
+        .now-playing {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .now-playing-thumbnail {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 0, 0, 0.2);
+        }
+
+        .now-playing-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .now-playing-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .now-playing-channel {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .control-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .control-button:hover {
+            color: var(--primary-color);
+            background: rgba(255, 0, 0, 0.2);
+            transform: scale(1.1);
+        }
+
+        .play-pause {
+            font-size: 1.4rem;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .play-pause:hover {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+            color: var(--text-secondary);
+            height: 100%;
+            width: 100%;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--spacing-lg);
+            color: var(--text-secondary);
+            background: var(--background-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 300px;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-sm);
+            color: var(--primary-color);
+            opacity: 0.5;
+        }
+
+        /* History Sidebar */
+        .history-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 350px;
+            height: 100%;
+            background: var(--background-medium);
+            z-index: 1001;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-md);
+            background: rgba(15, 15, 15, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .sidebar-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all var(--transition-speed);
+        }
+
+        .sidebar-close:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: var(--primary-color);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-md);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .history-item {
+            background: var(--background-card);
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            border-left: 4px solid transparent;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 0, 0, 0.05);
+            border-left-color: var(--primary-color);
+            transform: translateX(-5px);
+        }
+
+        .history-thumbnail {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .history-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-channel {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Backdrop Overlay */
+        .backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .backdrop.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive Design - PERBAIKAN UTAMA */
+        @media (max-width: 992px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .history-sidebar {
+                width: 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            /* FIXED: Search bar tetap rapi di mobile */
+            .search-box {
+                flex-direction: row !important;
+                padding: 6px !important;
+                border-radius: 50px !important;
+                background: var(--background-card) !important;
+                overflow: hidden;
+            }
+            
+            .search-input {
+                padding: 12px 16px !important;
+                font-size: 0.95rem !important;
+                background: transparent !important;
+                border-radius: 0 !important;
+            }
+            
+            .search-button {
+                padding: 0 20px !important;
+                border-radius: 50px !important;
+                font-size: 0.9rem !important;
+            }
+            
+            .search-button span {
+                display: none;
+            }
+            
+            .search-button i {
+                margin: 0;
+            }
+            
+            .now-playing-info {
+                display: none;
+            }
+            
+            .video-player-container {
+                padding: 0 var(--spacing-sm);
+            }
+            
+            .player-controls {
+                gap: var(--spacing-sm);
+            }
+            
+            .control-button {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+            
+            .header {
+                padding: var(--spacing-sm) var(--spacing-md);
+            }
+            
+            .content {
+                padding: var(--spacing-md);
+                padding-bottom: calc(var(--player-height) + var(--spacing-md));
+            }
+            
+            .initial-icon {
+                font-size: 4rem;
+            }
+            
+            .initial-title {
+                font-size: 1.8rem;
+            }
+            
+            .initial-subtitle {
+                font-size: 1rem;
+                padding: 0 var(--spacing-md);
+            }
+            
+            .history-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .install-text span {
+                display: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo-text {
+                font-size: 1.4rem;
+            }
+            
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+            
+            .header-actions {
+                gap: var(--spacing-sm);
+            }
+            
+            .action-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .search-box {
+                padding: 4px !important;
+            }
+            
+            .search-input {
+                padding: 10px 14px !important;
+            }
+            
+            .search-button {
+                padding: 0 16px !important;
+            }
+            
+            .initial-icon {
+                font-size: 3.5rem;
+            }
+            
+            .initial-title {
+                font-size: 1.6rem;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-medium);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--primary-color), var(--accent-blue));
+            border-radius: 4px;
+            border: 2px solid var(--background-medium);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, var(--primary-dark), var(--accent-blue));
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 { margin-top: var(--spacing-sm); }
+        .mt-2 { margin-top: var(--spacing-md); }
+        .mt-3 { margin-top: var(--spacing-lg); }
+        
+        .mb-1 { margin-bottom: var(--spacing-sm); }
+        .mb-2 { margin-bottom: var(--spacing-md); }
+        .mb-3 { margin-bottom: var(--spacing-lg); }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { 
+                transform: scale(1);
+            }
+            50% { 
+                transform: scale(1.05);
+            }
+            100% { 
+                transform: scale(1);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        /* Install PWA Button */
+        .install-fab {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.3);
+            z-index: 999;
+            transition: all var(--transition-speed);
+        }
+        
+        .install-fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Install PWA Banner -->
+    <div id="install-banner">
+        <div class="install-content">
+            <i class="fas fa-download install-icon"></i>
+            <div class="install-text">
+                <span>Install Music Hub for background play</span>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button id="install-button" class="install-btn">Install</button>
+            <button id="dismiss-banner" class="dismiss-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Install PWA Floating Button -->
+    <div id="install-fab" class="install-fab" title="Install App">
+        <i class="fas fa-download"></i>
+    </div>
+
+    <!-- Header with Search -->
+    <header class="header" id="main-header">
+        <div class="header-content">
+            <div class="header-top">
+                <a href="homepage.html" class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div class="logo-text">Music Hub</div>
+                </a>
+                
+                <div class="header-actions">
+                    <button id="history-btn" class="action-btn" title="Play History">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button id="pwa-install-btn" class="action-btn" title="Install App">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" class="search-input" placeholder="Search for songs, artists, or albums...">
+                    <button id="search-button" class="search-button">
+                        <i class="fas fa-search"></i>
+                        <span>Search</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content">
+        <!-- Initial State - Centered -->
+        <div id="initial-state" class="initial-state">
+            <i class="fas fa-music initial-icon"></i>
+            <h1 class="initial-title">Welcome to Music Hub</h1>
+            <p class="initial-subtitle">Search for music, create playlists, and enjoy background play on Android PWA. Your music never stops.</p>
+            <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md); flex-wrap: wrap; justify-content: center;">
+                <span class="tag">Pop</span>
+                <span class="tag">Rock</span>
+                <span class="tag">Hip Hop</span>
+                <span class="tag">Electronic</span>
+                <span class="tag">R&B</span>
+            </div>
+        </div>
+        
+        <div id="search-results-info" class="search-results-info hidden">
+            Showing results for: <strong id="search-query"></strong>
+        </div>
+        
+        <div id="search-loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Searching for music...</p>
+        </div>
+        
+        <div id="search-container" class="video-grid hidden">
+            <!-- Search results will appear here -->
+        </div>
+        
+        <div id="search-empty" class="empty-state hidden">
+            <i class="fas fa-search"></i>
+            <h3>No results found</h3>
+            <p>Try different search keywords or check your connection</p>
+        </div>
+    </main>
+
+    <!-- Video Player -->
+    <div id="player-container" class="video-player-container">
+        <div class="now-playing">
+            <img id="now-playing-thumb" class="now-playing-thumbnail" src="" alt="Now Playing">
+            <div class="now-playing-info">
+                <div id="now-playing-title" class="now-playing-title">No video playing</div>
+                <div id="now-playing-channel" class="now-playing-channel">Select a video to start</div>
+            </div>
+        </div>
+        
+        <div class="player-controls">
+            <button id="prev-button" class="control-button" title="Previous">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button id="play-pause-button" class="control-button play-pause" title="Play/Pause">
+                <i class="fas fa-play"></i>
+            </button>
+            <button id="next-button" class="control-button" title="Next">
+                <i class="fas fa-step-forward"></i>
+            </button>
+            <button id="close-player" class="control-button" title="Close Player">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- History Sidebar -->
+    <div id="history-sidebar" class="history-sidebar">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">
+                <i class="fas fa-history"></i>
+                <span>Recently Played</span>
+            </h3>
+            <button class="sidebar-close" id="close-sidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-content">
+            <div id="history-list" class="history-list">
+                <!-- History items will appear here -->
+            </div>
+            <div id="empty-history" class="empty-state" style="margin-top: 20px; height: auto;">
+                <i class="fas fa-history"></i>
+                <h3>No history yet</h3>
+                <p>Play some music to see your history here</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backdrop Overlay -->
+    <div id="backdrop" class="backdrop"></div>
+
+    <!-- YouTube IFrame Player -->
+    <div id="youtube-player" style="display: none;"></div>
+
+    <script>
+        // API Configuration
+        const IS_VERCEL = true;
+        const API_BASE = window.location.origin;
+        
+        // Application State
+        let player = null;
+        let currentVideoId = null;
+        let currentVideoInfo = null;
+        let currentPlaylist = [];
+        let currentVideoIndex = -1;
+        let deferredPrompt = null;
+        let isPWAInstalled = false;
+        let playHistory = JSON.parse(localStorage.getItem('musicHubPlayHistory')) || [];
+        
+        // Western artists for demo
+        const westernArtists = ['Taylor Swift', 'Ed Sheeran', 'The Weeknd', 'Drake', 'Billie Eilish', 
+                              'Bruno Mars', 'Adele', 'Justin Bieber', 'Dua Lipa', 'Post Malone',
+                              'Harry Styles', 'Miley Cyrus', 'Ariana Grande', 'Kanye West',
+                              'Rihanna', 'Coldplay', 'Maroon 5', 'Lady Gaga', 'Shawn Mendes'];
+        
+        // DOM Elements
+        const playerContainer = document.getElementById('player-container');
+        const playPauseButton = document.getElementById('play-pause-button');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const searchContainer = document.getElementById('search-container');
+        const initialState = document.getElementById('initial-state');
+        const installBanner = document.getElementById('install-banner');
+        const installButton = document.getElementById('install-button');
+        const dismissBanner = document.getElementById('dismiss-banner');
+        const installFab = document.getElementById('install-fab');
+        const pwaInstallBtn = document.getElementById('pwa-install-btn');
+        const historyBtn = document.getElementById('history-btn');
+        const historySidebar = document.getElementById('history-sidebar');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const backdrop = document.getElementById('backdrop');
+        const historyList = document.getElementById('history-list');
+        const emptyHistory = document.getElementById('empty-history');
+        const mainHeader = document.getElementById('main-header');
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize YouTube IFrame Player
+            loadYouTubePlayerAPI();
+            
+            // Focus on search input
+            searchInput.focus();
+            
+            // Add tags
+            addTags();
+            
+            // Check PWA installation
+            checkPWAInstallation();
+            
+            // Load play history
+            renderPlayHistory();
+            
+            // Setup MediaSession API
+            setupMediaSession();
+            
+            // Register service worker for PWA
+            registerServiceWorker();
+            
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification('Welcome to Music Hub! Search for your favorite music.');
+            }, 1000);
+        });
+        
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Search functionality
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // Player controls
+            document.getElementById('play-pause-button').addEventListener('click', togglePlayPause);
+            document.getElementById('close-player').addEventListener('click', closePlayer);
+            document.getElementById('prev-button').addEventListener('click', playPreviousVideo);
+            document.getElementById('next-button').addEventListener('click', playNextVideo);
+            
+            // PWA installation
+            installButton.addEventListener('click', installPWA);
+            dismissBanner.addEventListener('click', dismissInstallBanner);
+            installFab.addEventListener('click', installPWA);
+            pwaInstallBtn.addEventListener('click', showInstallPrompt);
+            
+            // History sidebar
+            historyBtn.addEventListener('click', toggleHistorySidebar);
+            closeSidebar.addEventListener('click', closeHistorySidebar);
+            backdrop.addEventListener('click', closeHistorySidebar);
+            
+            // Before install prompt (PWA)
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install banner after 3 seconds
+                setTimeout(() => {
+                    if (!isPWAInstalled) {
+                        showInstallBanner();
+                    }
+                }, 3000);
+                
+                // Show install FAB
+                installFab.style.display = 'flex';
+            });
+            
+            // PWA installed
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA installed');
+                isPWAInstalled = true;
+                hideInstallBanner();
+                installFab.style.display = 'none';
+                showNotification('Music Hub installed successfully!', 3000);
+            });
+            
+            // Check if app is running as PWA
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                isPWAInstalled = true;
+                console.log('Running as PWA');
+            }
+        }
+        
+        // Add genre tags
+        function addTags() {
+            const tagsContainer = document.querySelector('.initial-state .tag');
+            if (!tagsContainer) return;
+            
+            const tags = document.querySelectorAll('.tag');
+            tags.forEach(tag => {
+                tag.style.cssText = `
+                    background: rgba(255, 0, 0, 0.1);
+                    color: var(--primary-color);
+                    padding: 8px 16px;
+                    border-radius: 50px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    border: 1px solid rgba(255, 0, 0, 0.2);
+                    transition: all var(--transition-speed);
+                    cursor: pointer;
+                `;
+                
+                tag.addEventListener('click', function() {
+                    const genre = this.textContent;
+                    searchInput.value = genre + ' music';
+                    performSearch();
+                });
+                
+                tag.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                    this.style.boxShadow = 'var(--glow-shadow)';
+                });
+                
+                tag.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+        }
+        
+        // Perform search via Vercel Function
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                showNotification('Please enter search keywords for music');
+                return;
+            }
+            
+            // Hide initial state
+            initialState.classList.add('hidden');
+            document.getElementById('search-empty').classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            
+            // Show loading state
+            document.getElementById('search-loading').classList.remove('hidden');
+            searchContainer.innerHTML = '';
+            
+            // Show search query info
+            const resultsInfo = document.getElementById('search-results-info');
+            document.getElementById('search-query').textContent = query;
+            resultsInfo.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Handle demo data fallback
+                if (data.demo) {
+                    console.log('Using demo data for search results');
+                    displaySearchResults(data.items || []);
+                    showNotification('Using demo data. Add YouTube API key for real results.', 4000);
+                } else {
+                    displaySearchResults(data.items || []);
+                }
+                
+            } catch (error) {
+                console.error('Error searching videos:', error);
+                showDemoSearchResults(query);
+                showNotification('Search failed. Using demo data.', 3000);
+            }
+        }
+        
+        // Display search results
+        function displaySearchResults(videos) {
+            document.getElementById('search-loading').classList.add('hidden');
+            
+            if (!videos || videos.length === 0) {
+                document.getElementById('search-empty').classList.remove('hidden');
+                return;
+            }
+            
+            // Update current playlist
+            currentPlaylist = videos;
+            
+            // Clear container
+            searchContainer.innerHTML = '';
+            
+            // Display each video
+            videos.forEach((video, index) => {
+                const delay = index * 0.05;
+                const videoCard = createVideoCard(video, index, delay);
+                searchContainer.appendChild(videoCard);
+            });
+            
+            // Show grid
+            searchContainer.classList.remove('hidden');
+        }
+        
+        // Create a video card element
+        function createVideoCard(videoData, index, delay = 0) {
+            const videoId = videoData.id.videoId || videoData.id;
+            const title = videoData.snippet.title;
+            const channel = videoData.snippet.channelTitle;
+            const thumbnail = videoData.snippet.thumbnails?.medium?.url || 
+                            videoData.snippet.thumbnails?.high?.url || 
+                            'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg';
+            
+            // Random artist (for demo purposes)
+            const randomArtist = westernArtists[Math.floor(Math.random() * westernArtists.length)];
+            
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.dataset.videoId = videoId;
+            card.dataset.index = index;
+            card.style.animationDelay = `${delay}s`;
+            
+            // Truncate title if too long
+            const truncatedTitle = title.length > 60 ? title.substring(0, 57) + '...' : title;
+            
+            card.innerHTML = `
+                <div class="video-thumbnail-container">
+                    <img src="${thumbnail}" alt="${title}" class="video-thumbnail" loading="lazy">
+                    <div class="video-thumbnail-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title" title="${title}">${truncatedTitle}</div>
+                    <div class="video-channel">
+                        <i class="fas fa-user"></i>
+                        <span>${channel || randomArtist}</span>
+                    </div>
+                    <div class="video-stats">
+                        <span><i class="fas fa-play-circle"></i> ${formatNumber(Math.floor(Math.random() * 1000) + 1)}M views</span>
+                        <div class="video-actions">
+                            <button class="video-action-btn" title="Add to playlist">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="video-action-btn" title="More options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add click event to play video
+            card.addEventListener('click', function() {
+                playVideo(videoId, title, channel || randomArtist, thumbnail, index);
+            });
+            
+            // Add button events
+            const buttons = card.querySelectorAll('.video-action-btn');
+            buttons[0].addEventListener('click', function(e) {
+                e.stopPropagation();
+                showNotification(`"${truncatedTitle}" added to playlist`);
+            });
+            
+            buttons[1].addEventListener('click', function(e) {
+                e.stopPropagation();
+                showNotification(`More options for "${truncatedTitle}"`);
+            });
+            
+            return card;
+        }
+        
+        // Show demo search results (fallback)
+        function showDemoSearchResults(query) {
+            document.getElementById('search-loading').classList.add('hidden');
+            
+            // Demo search results for music
+            const demoResults = [
+                {
+                    id: { videoId: 'JGwWNGJdvx8' },
+                    snippet: {
+                        title: 'Shape of You - Ed Sheeran',
+                        channelTitle: 'Ed Sheeran',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg' }
+                        }
+                    }
+                },
+                {
+                    id: { videoId: '5sMKX22BHeE' },
+                    snippet: {
+                        title: 'Bad Guy - Billie Eilish',
+                        channelTitle: 'Billie Eilish',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/5sMKX22BHeE/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/5sMKX22BHeE/hqdefault.jpg' }
+                        }
+                    }
+                },
+                {
+                    id: { videoId: 'Z9X4k9JdHic' },
+                    snippet: {
+                        title: 'Blinding Lights - The Weeknd',
+                        channelTitle: 'The Weeknd',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/Z9X4k9JdHic/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/Z9X4k9JdHic/hqdefault.jpg' }
+                        }
+                    }
+                },
+                {
+                    id: { videoId: 'tFEW5e1uT3Y' },
+                    snippet: {
+                        title: 'Flowers - Miley Cyrus',
+                        channelTitle: 'Miley Cyrus',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/tFEW5e1uT3Y/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/tFEW5e1uT3Y/hqdefault.jpg' }
+                        }
+                    }
+                },
+                {
+                    id: { videoId: 'k2qgadSvNyU' },
+                    snippet: {
+                        title: 'As It Was - Harry Styles',
+                        channelTitle: 'Harry Styles',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/k2qgadSvNyU/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/k2qgadSvNyU/hqdefault.jpg' }
+                        }
+                    }
+                },
+                {
+                    id: { videoId: 'b1kbLwvqugk' },
+                    snippet: {
+                        title: 'Anti-Hero - Taylor Swift',
+                        channelTitle: 'Taylor Swift',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/b1kbLwvqugk/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/b1kbLwvqugk/hqdefault.jpg' }
+                        }
+                    }
+                },
+                {
+                    id: { videoId: 'U9BwWKXjVaI' },
+                    snippet: {
+                        title: 'Stay - The Kid LAROI & Justin Bieber',
+                        channelTitle: 'Justin Bieber',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/U9BwWKXjVaI/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/U9BwWKXjVaI/hqdefault.jpg' }
+                        }
+                    }
+                },
+                {
+                    id: { videoId: 'mWRsgZuwf_8' },
+                    snippet: {
+                        title: 'Easy On Me - Adele',
+                        channelTitle: 'Adele',
+                        thumbnails: { 
+                            medium: { url: 'https://i.ytimg.com/vi/mWRsgZuwf_8/mqdefault.jpg' },
+                            high: { url: 'https://i.ytimg.com/vi/mWRsgZuwf_8/hqdefault.jpg' }
+                        }
+                    }
+                }
+            ];
+            
+            // Filter demo results by query if possible
+            const filteredResults = demoResults.filter(video => 
+                video.snippet.title.toLowerCase().includes(query.toLowerCase()) ||
+                query.toLowerCase().includes('music')
+            );
+            
+            // Display results
+            displaySearchResults(filteredResults.length > 0 ? filteredResults : demoResults);
+        }
+        
+        // Play a video
+        function playVideo(videoId, title, channel, thumbnail, index) {
+            currentVideoId = videoId;
+            currentVideoInfo = { title, channel, thumbnail };
+            currentVideoIndex = index;
+            
+            // Update player UI
+            document.getElementById('now-playing-title').textContent = title;
+            document.getElementById('now-playing-channel').textContent = channel;
+            document.getElementById('now-playing-thumb').src = thumbnail;
+            
+            // Show player with animation
+            playerContainer.classList.add('active');
+            
+            // Load and play video in iframe player
+            if (player && typeof player.loadVideoById === 'function') {
+                player.loadVideoById(videoId);
+                player.playVideo();
+                playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                // If player not ready, prepare it
+                if (typeof YT !== 'undefined' && YT.Player) {
+                    initializePlayer(videoId);
+                }
+            }
+            
+            // Add to play history
+            addToPlayHistory(videoId, title, channel, thumbnail);
+            
+            // Update MediaSession
+            updateMediaSession(title, channel, thumbnail);
+            
+            // Highlight the playing video card
+            highlightPlayingVideo();
+            
+            // Show notification
+            showNotification(`Now playing: ${title}`, 2000);
+        }
+        
+        // Initialize YouTube player
+        function initializePlayer(videoId) {
+            if (player) {
+                player.destroy();
+            }
+            
+            player = new YT.Player('youtube-player', {
+                height: '0',
+                width: '0',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,
+                    'disablekb': 0,
+                    'modestbranding': 1,
+                    'fs': 0,
+                    'playsinline': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                }
+            });
+        }
+        
+        // Load YouTube Player API
+        function loadYouTubePlayerAPI() {
+            // Load the YouTube IFrame Player API code asynchronously
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+        
+        // YouTube API callback when player is ready
+        function onPlayerReady(event) {
+            // Player is ready, update UI
+            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            console.log('YouTube player ready');
+            
+            // Set up MediaSession for iOS
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'playing';
+            }
+        }
+        
+        // YouTube player state change handler
+        function onPlayerStateChange(event) {
+            // Update play/pause button based on player state
+            if (event.data === YT.PlayerState.PLAYING) {
+                playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'paused';
+                }
+            }
+            
+            // Auto-play next video when current ends
+            if (event.data === YT.PlayerState.ENDED) {
+                setTimeout(playNextVideo, 1000);
+            }
+        }
+        
+        // YouTube player error handler
+        function onPlayerError(event) {
+            console.error('YouTube player error:', event.data);
+            showNotification('Error playing video. Try another one.', 3000);
+        }
+        
+        // Toggle play/pause
+        function togglePlayPause() {
+            if (!player) return;
+            
+            const playerState = player.getPlayerState();
+            
+            if (playerState === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+                playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                player.playVideo();
+                playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+        }
+        
+        // Close player
+        function closePlayer() {
+            playerContainer.classList.remove('active');
+            
+            if (player && typeof player.pauseVideo === 'function') {
+                player.pauseVideo();
+            }
+            
+            // Remove highlight from video card
+            document.querySelectorAll('.video-card.playing').forEach(card => {
+                card.classList.remove('playing');
+            });
+            
+            // Update MediaSession
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'none';
+            }
+        }
+        
+        // Play previous video
+        function playPreviousVideo() {
+            if (currentPlaylist.length === 0 || currentVideoIndex <= 0) return;
+            
+            const prevIndex = currentVideoIndex - 1;
+            const prevVideo = currentPlaylist[prevIndex];
+            
+            if (prevVideo) {
+                const videoId = prevVideo.id.videoId || prevVideo.id;
+                const title = prevVideo.snippet.title;
+                const channel = prevVideo.snippet.channelTitle;
+                const thumbnail = prevVideo.snippet.thumbnails?.medium?.url || 
+                                prevVideo.snippet.thumbnails?.high?.url || 
+                                'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg';
+                
+                playVideo(videoId, title, channel, thumbnail, prevIndex);
+            }
+        }
+        
+        // Play next video
+        function playNextVideo() {
+            if (currentPlaylist.length === 0 || currentVideoIndex >= currentPlaylist.length - 1) return;
+            
+            const nextIndex = currentVideoIndex + 1;
+            const nextVideo = currentPlaylist[nextIndex];
+            
+            if (nextVideo) {
+                const videoId = nextVideo.id.videoId || nextVideo.id;
+                const title = nextVideo.snippet.title;
+                const channel = nextVideo.snippet.channelTitle;
+                const thumbnail = nextVideo.snippet.thumbnails?.medium?.url || 
+                                nextVideo.snippet.thumbnails?.high?.url || 
+                                'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg';
+                
+                playVideo(videoId, title, channel, thumbnail, nextIndex);
+            }
+        }
+        
+        // Highlight the currently playing video card
+        function highlightPlayingVideo() {
+            // Remove highlight from all cards
+            document.querySelectorAll('.video-card').forEach(card => {
+                card.classList.remove('playing');
+                card.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+            });
+            
+            // Add highlight to current card
+            const currentCard = document.querySelector(`.video-card[data-index="${currentVideoIndex}"]`);
+            if (currentCard) {
+                currentCard.classList.add('playing');
+                currentCard.style.borderColor = 'var(--primary-color)';
+                currentCard.style.boxShadow = 'var(--hover-shadow)';
+                
+                // Scroll to the card if it's not fully visible
+                currentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        
+        // Add video to play history
+        function addToPlayHistory(videoId, title, channel, thumbnail) {
+            // Remove if already exists (to keep history unique)
+            playHistory = playHistory.filter(item => item.id !== videoId);
+            
+            // Add to beginning
+            playHistory.unshift({
+                id: videoId,
+                title: title,
+                channel: channel,
+                thumbnail: thumbnail,
+                playedAt: new Date().toISOString()
+            });
+            
+            // Keep only last 20
+            if (playHistory.length > 20) {
+                playHistory.pop();
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('musicHubPlayHistory', JSON.stringify(playHistory));
+            
+            // Update history display
+            renderPlayHistory();
+        }
+        
+        // Render play history
+        function renderPlayHistory() {
+            if (playHistory.length === 0) {
+                historyList.innerHTML = '';
+                emptyHistory.classList.remove('hidden');
+                return;
+            }
+            
+            emptyHistory.classList.add('hidden');
+            historyList.innerHTML = '';
+            
+            playHistory.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.dataset.videoId = item.id;
+                
+                const truncatedTitle = item.title.length > 40 ? item.title.substring(0, 37) + '...' : item.title;
+                
+                historyItem.innerHTML = `
+                    <img src="${item.thumbnail}" alt="${item.title}" class="history-thumbnail">
+                    <div class="history-info">
+                        <div class="history-title" title="${item.title}">${truncatedTitle}</div>
+                        <div class="history-channel">${item.channel}</div>
+                    </div>
+                    <button class="video-action-btn play-history-btn" title="Play">
+                        <i class="fas fa-play"></i>
+                    </button>
+                `;
+                
+                // Add click event to play video
+                historyItem.addEventListener('click', function(e) {
+                    if (!e.target.closest('.play-history-btn')) {
+                        playVideo(item.id, item.title, item.channel, item.thumbnail, -1);
+                        closeHistorySidebar();
+                    }
+                });
+                
+                // Play button
+                const playButton = historyItem.querySelector('.play-history-btn');
+                playButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    playVideo(item.id, item.title, item.channel, item.thumbnail, -1);
+                    closeHistorySidebar();
+                });
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Setup MediaSession API for background play
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                // Set action handlers
+                navigator.mediaSession.setActionHandler('play', () => {
+                    if (player) {
+                        player.playVideo();
+                        playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    if (player) {
+                        player.pauseVideo();
+                        playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('previoustrack', playPreviousVideo);
+                navigator.mediaSession.setActionHandler('nexttrack', playNextVideo);
+                
+                // Seek handlers (optional)
+                navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+                    if (player) {
+                        const currentTime = player.getCurrentTime();
+                        player.seekTo(Math.max(currentTime - 10, 0), true);
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('seekforward', (details) => {
+                    if (player) {
+                        const currentTime = player.getCurrentTime();
+                        player.seekTo(currentTime + 10, true);
+                    }
+                });
+                
+                console.log('MediaSession API setup complete');
+            }
+        }
+        
+        // Update MediaSession metadata
+        function updateMediaSession(title, artist, artwork) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title,
+                    artist: artist,
+                    artwork: [
+                        { src: artwork, sizes: '96x96', type: 'image/jpeg' },
+                        { src: artwork, sizes: '128x128', type: 'image/jpeg' },
+                        { src: artwork, sizes: '192x192', type: 'image/jpeg' },
+                        { src: artwork, sizes: '256x256', type: 'image/jpeg' },
+                        { src: artwork, sizes: '384x384', type: 'image/jpeg' },
+                        { src: artwork, sizes: '512x512', type: 'image/jpeg' }
+                    ]
+                });
+            }
+        }
+        
+        // Register Service Worker for PWA
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('ServiceWorker registration successful:', registration.scope);
+                        })
+                        .catch(err => {
+                            console.log('ServiceWorker registration failed:', err);
+                        });
+                });
+            }
+        }
+        
+        // PWA Installation
+        function showInstallBanner() {
+            if (!isPWAInstalled && deferredPrompt) {
+                installBanner.style.display = 'flex';
+                mainHeader.classList.add('with-banner');
+            }
+        }
+        
+        function hideInstallBanner() {
+            installBanner.style.display = 'none';
+            mainHeader.classList.remove('with-banner');
+        }
+        
+        function dismissInstallBanner() {
+            hideInstallBanner();
+            // Store dismissal in localStorage for 7 days
+            localStorage.setItem('pwaBannerDismissed', Date.now().toString());
+        }
+        
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        isPWAInstalled = true;
+                        hideInstallBanner();
+                        installFab.style.display = 'none';
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+        
+        function showInstallPrompt() {
+            if (deferredPrompt) {
+                installPWA();
+            } else if (isPWAInstalled) {
+                showNotification('Music Hub is already installed!', 3000);
+            } else {
+                showNotification('Install option will appear soon. Try refreshing the page.', 3000);
+            }
+        }
+        
+        function checkPWAInstallation() {
+            // Check if banner was dismissed recently
+            const dismissedTime = localStorage.getItem('pwaBannerDismissed');
+            if (dismissedTime) {
+                const sevenDays = 7 * 24 * 60 * 60 * 1000;
+                if (Date.now() - parseInt(dismissedTime) < sevenDays) {
+                    // Don't show banner if dismissed within 7 days
+                    return;
+                }
+            }
+            
+            // Check if running as PWA
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                isPWAInstalled = true;
+                installFab.style.display = 'none';
+            }
+        }
+        
+        // History sidebar functions
+        function toggleHistorySidebar() {
+            historySidebar.classList.toggle('active');
+            backdrop.classList.toggle('active');
+            
+            if (historySidebar.classList.contains('active')) {
+                renderPlayHistory();
+            }
+        }
+        
+        function closeHistorySidebar() {
+            historySidebar.classList.remove('active');
+            backdrop.classList.remove('active');
+        }
+        
+        // Show notification
+        function showNotification(message, duration = 3000) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 24px;
+                right: 24px;
+                background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+                color: white;
+                padding: 14px 20px;
+                border-radius: 10px;
+                z-index: 9999;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+                animation: slideInRight 0.3s ease, slideOutRight 0.3s ease ${duration - 300}ms;
+                max-width: 350px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            `;
+            
+            notification.innerHTML = `
+                <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after duration
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, duration);
+            
+            // Add keyframes for animation if not already added
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        // Format numbers (e.g., 1.5M)
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+        
+        // Global callback for YouTube API
+        window.onYouTubeIframeAPIReady = function() {
+            console.log('YouTube IFrame API is ready');
+        };
+    </script>
+</body>
+</html>

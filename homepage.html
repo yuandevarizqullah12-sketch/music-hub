@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Hub - Your Ultimate Music Streaming App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF0000;
+            --primary-dark: #CC0000;
+            --secondary-color: #282828;
+            --background-dark: #0F0F0F;
+            --background-medium: #1A1A1A;
+            --background-light: #242424;
+            --text-primary: #FFFFFF;
+            --text-secondary: #AAAAAA;
+            --text-disabled: #666666;
+            --accent-blue: #3EA6FF;
+            --accent-purple: #9146FF;
+            --accent-green: #2BA640;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 48px;
+            --border-radius: 16px;
+            --border-radius-lg: 24px;
+            --transition-speed: 0.3s;
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --hover-shadow: 0 12px 48px rgba(255, 0, 0, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 100%);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, rgba(15, 15, 15, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%);
+            padding: var(--spacing-md) var(--spacing-lg);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all var(--transition-speed);
+            padding: 8px 16px;
+            border-radius: 50px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .cta-button {
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue));
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all var(--transition-speed);
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 0, 0, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 180px var(--spacing-lg) 120px;
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: var(--spacing-md);
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto var(--spacing-xl);
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--spacing-xl);
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue));
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 0, 0, 0.4);
+        }
+
+        /* Features Section */
+        .section {
+            padding: var(--spacing-xl) var(--spacing-lg);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            background: linear-gradient(to right, var(--primary-color), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+
+        .feature-card {
+            background: var(--background-medium);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: all var(--transition-speed);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-color);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-md);
+            font-size: 2rem;
+            color: white;
+        }
+
+        /* Download Section */
+        .download-section {
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.05) 0%, rgba(62, 166, 255, 0.05) 100%);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            margin-top: var(--spacing-xl);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .download-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+
+        .download-card {
+            background: var(--background-medium);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: all var(--transition-speed);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .download-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .os-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--primary-color);
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(15, 15, 15, 0.95);
+            padding: var(--spacing-xl) var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-xl);
+        }
+
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-md);
+            color: white;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color var(--transition-speed);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .social-links {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all var(--transition-speed);
+        }
+
+        .social-link:hover {
+            background: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 140px var(--spacing-md) 80px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .features-grid,
+            .download-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--background-dark);
+                padding: var(--spacing-md);
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#home" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="logo-text">Music Hub</div>
+            </a>
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#download" class="nav-link">Download</a>
+                <a href="privacy-policy.html" class="nav-link">Privacy Policy</a>
+                <a href="terms-of-service.html" class="nav-link">Terms</a>
+            </nav>
+
+            <a href="index.html" class="cta-button">
+                <i class="fas fa-play"></i>
+                <span>Launch Web App</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="animate-fade-in-up">
+            <h1>Stream Music Anywhere, Anytime</h1>
+            <p>Experience seamless music streaming with background play, offline mode, and multi-platform support. Your music never stops.</p>
+            
+            <div class="hero-buttons">
+                <a href="index.html" class="btn btn-primary">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Start Listening Now</span>
+                </a>
+                <a href="#download" class="btn btn-secondary">
+                    <i class="fas fa-download"></i>
+                    <span>Download App</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <h2 class="section-title">Why Choose Music Hub?</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card animate-fade-in-up">
+                <div class="feature-icon">
+                    <i class="fas fa-headphones-alt"></i>
+                </div>
+                <h3>Background Play</h3>
+                <p>Listen to music while using other apps or with screen locked. Perfect for Android PWA.</p>
+            </div>
+
+            <div class="feature-card animate-fade-in-up" style="animation-delay: 0.2s">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Lightning Fast</h3>
+                <p>Quick search and instant playback with minimal buffering. Optimized for all connections.</p>
+            </div>
+
+            <div class="feature-card animate-fade-in-up" style="animation-delay: 0.4s">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3>Multi-Platform</h3>
+                <p>Available on Web, Windows, and Android. Sync your playlists across all devices.</p>
+            </div>
+
+            <div class="feature-card animate-fade-in-up" style="animation-delay: 0.6s">
+                <div class="feature-icon">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <h3>Cloud Sync</h3>
+                <p>Your playlists and favorites sync automatically across all your devices.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="section" id="download">
+        <h2 class="section-title">Download Music Hub</h2>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--spacing-lg); max-width: 800px; margin-left: auto; margin-right: auto;">
+            Choose your platform and start enjoying unlimited music streaming.
+        </p>
+        
+        <div class="download-section">
+            <div class="download-cards">
+                <div class="download-card">
+                    <div class="os-icon">
+                        <i class="fab fa-chrome"></i>
+                    </div>
+                    <h3>Web Version</h3>
+                    <p>Instant access via browser. No installation required.</p>
+                    <a href="index.html" class="btn btn-primary" style="margin-top: var(--spacing-md);">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>Open Web App</span>
+                    </a>
+                </div>
+
+                <div class="download-card">
+                    <div class="os-icon">
+                        <i class="fab fa-windows"></i>
+                    </div>
+                    <h3>Windows 64-bit</h3>
+                    <p>Native desktop application for Windows 10/11 64-bit systems.</p>
+                    <a href="downloads/MusicHubSetup64.exe" class="btn btn-primary" style="margin-top: var(--spacing-md);" download>
+                        <i class="fas fa-download"></i>
+                        <span>Download (64-bit)</span>
+                    </a>
+                </div>
+
+                <div class="download-card">
+                    <div class="os-icon">
+                        <i class="fab fa-windows"></i>
+                    </div>
+                    <h3>Windows 32-bit</h3>
+                    <p>Native desktop application for older Windows systems (32-bit).</p>
+                    <a href="downloads/MusicHubSetup32.exe" class="btn btn-primary" style="margin-top: var(--spacing-md);" download>
+                        <i class="fas fa-download"></i>
+                        <span>Download (32-bit)</span>
+                    </a>
+                </div>
+
+                <div class="download-card">
+                    <div class="os-icon">
+                        <i class="fab fa-android"></i>
+                    </div>
+                    <h3>Android App</h3>
+                    <p>Install as PWA for background play and lock screen controls.</p>
+                    <a href="#android-install" class="btn btn-primary" style="margin-top: var(--spacing-md);">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Install Instructions</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Android PWA Installation Guide -->
+        <div id="android-install" style="margin-top: var(--spacing-xl); padding: var(--spacing-lg); background: var(--background-medium); border-radius: var(--border-radius);">
+            <h3 style="margin-bottom: var(--spacing-md); color: var(--primary-color);">
+                <i class="fab fa-android"></i> Android PWA Installation Guide
+            </h3>
+            <ol style="color: var(--text-secondary); margin-left: var(--spacing-lg); line-height: 1.8;">
+                <li>Open <a href="index.html" style="color: var(--accent-blue);">Music Hub Web App</a> in Chrome browser</li>
+                <li>Tap the menu (three dots) in the top right corner</li>
+                <li>Select "Add to Home screen" or "Install app"</li>
+                <li>Follow the prompts to install the PWA</li>
+                <li>Once installed, open the app from your home screen</li>
+                <li>Enable background audio permissions when prompted</li>
+            </ol>
+            <p style="margin-top: var(--spacing-md); color: var(--text-secondary); font-size: 0.9rem;">
+                <i class="fas fa-info-circle"></i> Note: Background play requires Android 8.0+ and Chrome 72+
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Music Hub</h3>
+                <p style="color: var(--text-secondary);">Your ultimate music streaming companion. Free, fast, and feature-rich.</p>
+                <div class="social-links">
+                    <a href="https://x.com/Yuan_SF24983" class="social-link" target="_blank">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://github.com/yuandevarizqullah12-sketch/music-hub" class="social-link" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://youtube.com/@Yuan-m2r" class="social-link" target="_blank">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="index.html">Web Player</a></li>
+                    <li><a href="#download">Download</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    <li><a href="terms-of-service.html">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Platforms</h3>
+                <ul class="footer-links">
+                    <li><a href="index.html">Web Browser</a></li>
+                    <li><a href="downloads/MusicHubSetup64.exe" download>Windows 64-bit</a></li>
+                    <li><a href="downloads/MusicHubSetup32.exe" download>Windows 32-bit</a></li>
+                    <li><a href="#android-install">Android PWA</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Developer</h3>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/yuandevarizqullah12-sketch" target="_blank">GitHub Profile</a></li>
+                    <li><a href="https://x.com/Yuan_SF24983" target="_blank">Follow on X</a></li>
+                    <li><a href="https://github.com/yuandevarizqullah12-sketch/music-hub" target="_blank">View Source Code</a></li>
+                    <li><a href="mailto:yuandevarizqullah12@gmail.com">Contact Developer</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>&copy; 2026 Music Hub. All rights reserved. YouTube is a trademark of Google LLC.</p>
+            <p style="font-size: 0.8rem; margin-top: 8px; color: var(--text-disabled);">
+                This project is for educational purposes only. Not affiliated with YouTube or Google.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.getElementById('navLinks');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.feature-card, .download-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
